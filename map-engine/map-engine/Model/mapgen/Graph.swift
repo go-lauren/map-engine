@@ -32,6 +32,7 @@ class Graph {
         repeat {
             roomNums = Tools.roomNums(width: w, height: h);
         } while (roomNums < minRooms || roomNums > maxRooms)
+
     }
     
     func fill() -> Void {
@@ -62,6 +63,7 @@ class Graph {
         for hw: Hallway in edges {
             hw.copyTo(&rv)
         }
+        return rv
     }
     
     func fillRooms() -> Bool {
@@ -105,7 +107,7 @@ class Graph {
         }
         
         //remove vertices that are not adjacent to anything
-        var cloned: Array<Room> = vertices.map{ $0.copy() }
+        var cloned: Array<Room> = vertices.map{ $0 }
         for rm: Room in cloned {
             if (rm.adjacent(vertices).isEmpty) {
                 vertices.remove(at: vertices.firstIndex(of: rm)!)
@@ -120,7 +122,8 @@ class Graph {
         
         if (!connected()) {
             while (connectedComponents().count > 1) {
-                vertices.removeAll(connectedComponents().iterator().next())
+                var c: Set<Room> = connectedComponents().first(where: {_ in true})!
+                vertices.removeAll(where: { c.contains($0) })
             }
         }
         
@@ -128,7 +131,7 @@ class Graph {
         
         for rm: Room in vertices {
             for rq: Room in rm.adjacent(vertices) {
-                if (Double.random(0..<1) > 0.6) {
+                if (Double.random(in: 0..<1) > 0.6) {
                     rm.connections.append(rq)
                     rq.connections.append(rm)
                 }
@@ -143,7 +146,7 @@ class Graph {
         for rm: Room in vertices {
             while (!rm.connections.isEmpty) {
                 let rq: Room = rm.connections[0]
-                edges.add(addHallway(rm,rq))
+                edges.append(addHallway(rm,rq))
                 rm.connections.remove(at: rm.connections.firstIndex(of: rq)!)
                 rq.connections.remove(at: rq.connections.firstIndex(of: rm)!)
             }
@@ -222,12 +225,12 @@ class Graph {
         return hw
     }
     
-    func connectedComponents() -> Array<Array<Room>> {
-        var connectedComponents: Array<Array<Room>> = Array<Array<Room>>()
+    func connectedComponents() -> Set<Set<Room>> {
+        var connectedComponents: Set< Set<Room> > = Set< Set<Room> >()
         for rm: Room in vertices {
             var component: Array<Room> = Array<Room>()
             connected(&component, rm)
-            connectedComponents.append(component)
+            connectedComponents.insert(Set<Room>(component))
         }
         return connectedComponents
     }

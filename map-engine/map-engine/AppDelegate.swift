@@ -16,6 +16,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
+        window = UIWindow(frame: CGRect(x: 0, y: 0, width: 1024, height: 1024))
+        window?.makeKeyAndVisible()
+        window?.rootViewController = ARController()
         return true
     }
 

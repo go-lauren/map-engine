@@ -29,8 +29,11 @@ class Tools {
         let avgRoomHeight: Double = Double(w) / sqrt(Double(roomNums))
         let avgRoomWidth = Double(h) / sqrt(Double(roomNums))
         let avgRoomDim: Double = min(avgRoomHeight, avgRoomWidth)
-        var randomwidth: Int = Int(ceil(GKGaussianDistribution(randomSource: GKRandomSource(), mean: Float(avgRoomDim), deviation: Float(avgRoomWidth)).nextUniform() * Float(factor)))
-        var randomheight: Int = Int(ceil(GKGaussianDistribution(randomSource: GKRandomSource(), mean: Float(avgRoomDim), deviation: Float(avgRoomHeight)).nextUniform() * Float(factor))) as Int
+        var randomwidth  = Int.random(in: 2...10)
+        var randomheight = Int.random(in: 2...10)
+//        var randomwidth: Int = Int(ceil(GKGaussianDistribution(randomSource: GKRandomSource(), mean: Float(avgRoomDim), deviation: Float(avgRoomWidth)).nextUniform() * Float(factor)))
+//
+//        var randomheight: Int = Int(ceil(GKGaussianDistribution(randomSource: GKRandomSource(), mean: Float(avgRoomDim), deviation: Float(avgRoomHeight)).nextUniform() * Float(factor)))
         while (randomwidth < 2) {
             randomwidth = Int(ceil(GKGaussianDistribution(randomSource: GKRandomSource(), mean: Float(avgRoomDim), deviation: Float(avgRoomWidth)).nextUniform() * Float(factor)))
         }

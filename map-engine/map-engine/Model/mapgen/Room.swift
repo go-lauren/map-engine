@@ -8,7 +8,7 @@
 
 import Foundation
 
-class Room : Equatable{
+class Room : Equatable, Hashable{
     var connections: Array<Room>
     var world: Graph
     var height: Int //height of room, not including walls
@@ -67,7 +67,7 @@ class Room : Equatable{
             }
         }
         
-        adjacent = adjacent.filter { $0 == self };
+        adjacent = adjacent.filter { $0 != self };
         return adjacent
     }
     
@@ -210,7 +210,7 @@ class Room : Equatable{
     
     func intersection(_ h: Room) -> [Int]? {
         var intersection: [Int]?
-        intersection! = [-1, -1, -1, -1, -1]
+        intersection = [-1, -1, -1, -1, -1]
         var a2b2: [Int]? = Tools.intervalIntersection(position.y, position.y + height + 1,
         h.position.y, h.position.y + h.height + 1)
         var a1b1: [Int]? = Tools.intervalIntersection(position.x, position.x + width + 1,
@@ -253,6 +253,13 @@ class Room : Equatable{
         var rm: Room = Room(width, height, world)
         rm.connections = self.connections
         rm.position = self.position
-        return Room()
+        return rm
+    }
+    
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(height)
+        hasher.combine(width)
+        hasher.combine(position.x)
+        hasher.combine(position.y)
     }
 }
