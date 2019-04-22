@@ -63,6 +63,10 @@ class Graph {
         for hw: Hallway in edges {
             hw.copyTo(&rv)
         }
+        
+        rv = MapEditor.clearTips(&rv, self)
+        rv = MapEditor.clearIntersections(&rv, self)
+        rv = MapEditor.wrapWalls(&rv, self)
         return rv
     }
     
@@ -107,7 +111,7 @@ class Graph {
         }
         
         //remove vertices that are not adjacent to anything
-        var cloned: Array<Room> = vertices.map{ $0 }
+        let cloned: Array<Room> = vertices.map{ $0 }
         for rm: Room in cloned {
             if (rm.adjacent(vertices).isEmpty) {
                 vertices.remove(at: vertices.firstIndex(of: rm)!)
@@ -122,7 +126,7 @@ class Graph {
         
         if (!connected()) {
             while (connectedComponents().count > 1) {
-                var c: Set<Room> = connectedComponents().first(where: {_ in true})!
+                let c: Set<Room> = connectedComponents().first(where: {_ in true})!
                 vertices.removeAll(where: { c.contains($0) })
             }
         }
@@ -153,8 +157,8 @@ class Graph {
         }
         
         for hw: Hallway in edges {
-            var rm: Room = hw.connections[0]
-            var rq: Room = hw.connections[1]
+            let rm: Room = hw.connections[0]
+            let rq: Room = hw.connections[1]
             rm.connections.append(rm)
             rq.connections.append(rq)
         }
@@ -191,9 +195,9 @@ class Graph {
     
     func addRoom(_ factor: Double) -> Bool {
         var size: [Int] = Tools.roomSize(factor, w, h, roomNums)
-        var x: Int = size[0]
-        var y: Int = size[1]
-        var rm: Room = Room(x, y, self)
+        let x: Int = size[0]
+        let y: Int = size[1]
+        let rm: Room = Room(x, y, self)
         
         if (rm.placeRoom(vertices)) {
             vertices.append(rm);

@@ -13,6 +13,7 @@ import ARKit
 class ARController: UIViewController, ARSCNViewDelegate {
     
     var sceneView: ARSCNView!
+    var controls: Controls!
     var map: Graph = Graph(width: 100, height: 50)
     
     
@@ -44,6 +45,8 @@ class ARController: UIViewController, ARSCNViewDelegate {
                                   ARSCNDebugOptions.showFeaturePoints]
         sceneView.autoenablesDefaultLighting = true
         
+        self.controls = Controls(CGRect(x: 0, y: 0, width: 300, height: 100))
+        self.view.addSubview(controls)
         addTapGestureToSceneView()
     }
     
@@ -99,30 +102,36 @@ class ARController: UIViewController, ARSCNViewDelegate {
         node.addChildNode(planeNode)
     }
     
-//    func renderer(_ renderer: SCNSceneRenderer, didUpdate node: SCNNode, for anchor: ARAnchor) {
-//        // 1
-//        guard let planeAnchor = anchor as?  ARPlaneAnchor,
-//            let planeNode = node.childNodes.first,
-//            let plane = planeNode.geometry as? SCNPlane
-//            else { return }
-//
-//        // 2
-//        let width = CGFloat(planeAnchor.extent.x)
-//        let height = CGFloat(planeAnchor.extent.z)
-//        plane.width = width
-//        plane.height = height
-//
-//        // 3
-//        let x = CGFloat(planeAnchor.center.x)
-//        let y = CGFloat(planeAnchor.center.y)
-//        let z = CGFloat(planeAnchor.center.z)
-//        planeNode.position = SCNVector3(x, y, z)
-//    }
+    func renderer(_ renderer: SCNSceneRenderer, didUpdate node: SCNNode, for anchor: ARAnchor) {
+
+        guard let planeAnchor = anchor as?  ARPlaneAnchor,
+            let planeNode = node.childNodes.first,
+            let plane = planeNode.geometry as? SCNPlane
+            else { return }
+
+
+        let width = CGFloat(planeAnchor.extent.x)
+        let height = CGFloat(planeAnchor.extent.z)
+        plane.width = width
+        plane.height = height
+
+
+        let x = CGFloat(planeAnchor.center.x)
+        let y = CGFloat(planeAnchor.center.y)
+        let z = CGFloat(planeAnchor.center.z)
+        planeNode.position = SCNVector3(x, y, z)
+    }
     
     
     func addTapGestureToSceneView() {
         let tapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(ARController.renderMap(withGestureRecognizer:)))
         sceneView.addGestureRecognizer(tapGestureRecognizer)
+    }
+    
+
+    
+    @objc func controlPressed() {
+        
     }
     
     @objc func renderMap(withGestureRecognizer recognizer: UIGestureRecognizer) {
@@ -131,12 +140,12 @@ class ARController: UIViewController, ARSCNViewDelegate {
         
         let tappedNode: SCNNode = result.node
             if let geometry = tappedNode.geometry as? SCNPlane {
-                // obj is a string array. Do something with stringArray
+                
                 let dimension: CGFloat = min(geometry.width / CGFloat(map.w) , geometry.height / CGFloat(map.h))
+                
                 let outside = SCNPlane(width: dimension, height: dimension)
                 let inside =  SCNPlane(width: dimension, height: dimension)
                 let wall = SCNPlane(width: dimension, height: dimension)
-                print(dimension)
                 outside.materials.first?.diffuse.contents = UIColor.red
                 inside.materials.first?.diffuse.contents = UIColor.blue
                 wall.materials.first?.diffuse.contents = UIColor.white
@@ -145,7 +154,7 @@ class ARController: UIViewController, ARSCNViewDelegate {
                 for i in 0..<tiles.count {
                     for j in 0..<tiles[0].count {
                         let floor = SCNNode()
-                        floor.position = SCNVector3(CGFloat(i) * dimension - 0.5 * geometry.width, CGFloat(j) * dimension - 0.5 * geometry.height, 0.1)
+                        floor.position = SCNVector3(CGFloat(i) * dimension - 0.5 * geometry.width, CGFloat(j) * dimension - 0.5 * geometry.height,  0.1)
                         switch (tiles[i][j]) {
                             case Graph.Tile.Floor:
                                 floor.geometry = inside
@@ -155,31 +164,14 @@ class ARController: UIViewController, ARSCNViewDelegate {
                                 floor.geometry = wall
                         }
                         tappedNode.addChildNode(floor)
-                        geometry.materials.first?.diffuse.contents = UIColor.black
-//                        sceneView.scene.rootNode.addChildNode(floor)
+                       
                     }
                 }
+                geometry.materials.first?.diffuse.contents = UIColor.black
             }
 
     }
     
-    @objc func addShipToSceneView(withGestureRecognizer recognizer: UIGestureRecognizer) {
-        let tapLocation = recognizer.location(in: sceneView)
-        let hitTestResults = sceneView.hitTest(tapLocation, types: .existingPlaneUsingExtent)
-        
-        guard let hitTestResult = hitTestResults.first else { return }
-        let translation = hitTestResult.worldTransform.columns.3
-        let x = translation.x
-        let y = translation.y
-        let z = translation.z
-        
-        let shipNode = SCNNode(geometry: SCNBox(width: 0.1, height: 0.1, length: 0.1, chamferRadius: 0.0))
-    
-        
-        
-        shipNode.position = SCNVector3(x,y,z)
-        sceneView.scene.rootNode.addChildNode(shipNode)
-    }
     
     func session(_ session: ARSession, didFailWithError error: Error) {
         // Present an error message to the user
