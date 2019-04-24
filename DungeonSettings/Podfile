@@ -10,8 +10,6 @@ target 'DungeonSettings' do
   pod 'Timepiece' # Dates are a bitch
   pod 'BulletinBoard' # card popups
   pod 'DZNEmptyDataSet' # Initial view should look nice
-  pod 'Permission/Camera' # Get permissions
-  pod 'Permission/Notifications' # Get permissions
   pod 'RETableViewManager' # for settings
   pod 'PKRevealController' # Initial how-to screen
 
