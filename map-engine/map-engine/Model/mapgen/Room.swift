@@ -20,7 +20,7 @@ class Room : Equatable, Hashable{
         connections = Array<Room>()
         height = -1
         width = -1
-        world = Graph(width: -1, height: -1)
+        world = Graph(width: -1, height: -1, seed: 1234567890)
     }
     
     init(_ h: Int, _ w: Int, _ g: Graph) {
@@ -110,8 +110,8 @@ class Room : Equatable, Hashable{
         }
         var x, y: Int
         repeat {
-            x = Int.random(in: 0..<world.w)
-            y = Int.random(in: 0..<world.h)
+            x = world.random.nextUniform(0, world.w)
+            y = world.random.nextUniform(0, world.h)
             self.position.x = x;
             self.position.y = y;
         } while (overlap(placed))

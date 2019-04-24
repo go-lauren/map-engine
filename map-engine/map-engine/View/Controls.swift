@@ -18,36 +18,56 @@ class Controls: UIView {
     }
     */
     var buttons: [UIButton] // up, down, left, right
+    var delegate: ControlsDelegate!
+    let offset: CGFloat = 5
     
     init(_ frame: CGRect) {
         self.buttons = Array<UIButton>()
         super.init(frame: frame)
+
         for _ in 0..<4 {
             
             var button = UIButton()
             button.frame = self.frame
             buttons.append(button)
             button.backgroundColor = UIColor.white
-            button.addTarget(self, action: Selector("HoldDown:"), for: UIControl.Event.touchDown)
+            button.addTarget(self, action: #selector(Controls.press(sender:)), for: UIControl.Event.touchDown)
             self.addSubview(button)
         }
+        let dimension: CGFloat = min(self.frame.maxX - self.frame.minX, self.frame.maxY - self.frame.minY) / 3.0 - offset
         for i in 0..<4 {
-            buttons[i].frame = CGRect(x: CGFloat(i) * (self.frame.maxX - self.frame.minX) / CGFloat(4), y: buttons[i].frame.minY, width: (self.frame.maxX - self.frame.minX) / CGFloat(4), height: self.frame.maxY - self.frame.minY)
+            buttons[i].frame = CGRect(x: 0, y: 0, width: dimension, height: dimension)
         }
+        
+        buttons[0].center.x = self.frame.width / 2.0
+        buttons[1].center.x = self.frame.width / 2.0
+        buttons[1].center.y = self.frame.size.height - dimension / 2.0
+        buttons[2].center.y = self.frame.size.height / 2.0
+        buttons[3].center.y = self.frame.size.height / 2.0
+        buttons[3].center.x = self.frame.size.width - dimension / 2.0
     }
     
-    @objc func HoldDown(sender: UIButton) {
-        buttons[0].backgroundColor = UIColor.green
+    @objc func press(sender: UIButton) {
+        for i in 0..<4 {
+            if (buttons[i] === sender) {
+                delegate.moved(Movement(rawValue: i)!)
+                break
+            }
+        }
     }
     
     required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
     
-    enum Movement {
-        case Up
-        case Down
-        case Left
-        case Right
+    enum Movement: Int {
+        case Up = 0
+        case Down = 1
+        case Left = 2
+        case Right = 3
     }
+}
+
+protocol ControlsDelegate {
+    func moved(_ direction: Controls.Movement)
 }

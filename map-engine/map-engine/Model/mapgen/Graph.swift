@@ -20,8 +20,9 @@ class Graph {
     var minRooms: Int
     var maxRooms: Int
     var rv: [[Tile]]
+    var random: Random
     
-    init(width: Int, height: Int) {
+    init(width: Int, height: Int, seed: CLongLong) {
         w = width
         h = height
         minRooms = 2
@@ -29,13 +30,16 @@ class Graph {
         vertices = Array<Room>()
         edges = Array<Hallway>()
         rv = [[Tile]]()
+        random = Random(seed)
         repeat {
-            roomNums = Tools.roomNums(width: w, height: h);
+            roomNums = Tools.roomNums(random, width: w, height: h);
         } while (roomNums < minRooms || roomNums > maxRooms)
 
     }
     
     func fill() -> Void {
+        vertices = Array<Room>()
+        edges = Array<Hallway>()
         var connected: Bool = false
         while (!connected) {
             var filled: Bool;
@@ -135,7 +139,7 @@ class Graph {
         
         for rm: Room in vertices {
             for rq: Room in rm.adjacent(vertices) {
-                if (Double.random(in: 0..<1) > 0.6) {
+                if (random.nextUniform() > 0.6) {
                     rm.connections.append(rq)
                     rq.connections.append(rm)
                 }
@@ -163,10 +167,10 @@ class Graph {
             rq.connections.append(rq)
         }
         
-        for _  in 3..<30 {
-            let length: Int = Int.random(in: 3..<min(self.w, self.h))
+        for _  in 0..<15 {
+            let length: Int = random.nextUniform(3, min(self.w, self.h))
             var hw: Hallway
-            if (Double.random(in: 0..<1) > 0.5) {
+            if (random.nextUniform() > 0.5) {
                 hw = Hallway(length, 1, self, false)
             } else {
                 hw = Hallway(1, length, self, true)
@@ -194,7 +198,7 @@ class Graph {
     }
     
     func addRoom(_ factor: Double) -> Bool {
-        var size: [Int] = Tools.roomSize(factor, w, h, roomNums)
+        var size: [Int] = Tools.roomSize(random, factor, w, h, roomNums)
         let x: Int = size[0]
         let y: Int = size[1]
         let rm: Room = Room(x, y, self)

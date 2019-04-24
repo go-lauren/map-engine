@@ -19,8 +19,8 @@ class Hallway : Room {
     
     func placeHallway(_ rooms: Array<Room>, _ hallways: Array<Hallway>) -> Bool {
         var pos: Position = Position()
-        pos.x = Int.random(in: 0..<world.w-1)
-        pos.y = Int.random(in: 0..<world.h-1)
+        pos.x = world.random.nextUniform(0, world.w-1)
+        pos.y = world.random.nextUniform(0, world.h-1)
         position = pos
         if (overlapFloor(rooms)) {
             return false
@@ -51,7 +51,7 @@ class Hallway : Room {
         }
         
         repeat {
-            x = Int.random(in: interval![0]..<interval![1] + 1)
+            x = world.random.nextUniform(interval![0], interval![1] + 1)
             if (vertical()) {
                 position.x = x - 1
             } else {

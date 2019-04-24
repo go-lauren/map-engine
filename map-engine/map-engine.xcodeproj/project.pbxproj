@@ -20,6 +20,9 @@
 		7FA592CC225FF1BA004411D9 /* Hallway.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7FA592CB225FF1BA004411D9 /* Hallway.swift */; };
 		7FFC2835226C4348009FF088 /* MapEditor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7FFC2834226C4348009FF088 /* MapEditor.swift */; };
 		7FFC2839226C550E009FF088 /* Controls.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7FFC2838226C550E009FF088 /* Controls.swift */; };
+		7FFC283B226FA237009FF088 /* Random.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7FFC283A226FA237009FF088 /* Random.swift */; };
+		7FFC2841226FBE4C009FF088 /* Character.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7FFC2840226FBE4C009FF088 /* Character.swift */; };
+		7FFC2843226FCC7C009FF088 /* SpecialTile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7FFC2842226FCC7C009FF088 /* SpecialTile.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -50,6 +53,9 @@
 		7FA592CB225FF1BA004411D9 /* Hallway.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Hallway.swift; sourceTree = "<group>"; };
 		7FFC2834226C4348009FF088 /* MapEditor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapEditor.swift; sourceTree = "<group>"; };
 		7FFC2838226C550E009FF088 /* Controls.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Controls.swift; sourceTree = "<group>"; };
+		7FFC283A226FA237009FF088 /* Random.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Random.swift; sourceTree = "<group>"; };
+		7FFC2840226FBE4C009FF088 /* Character.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Character.swift; sourceTree = "<group>"; };
+		7FFC2842226FCC7C009FF088 /* SpecialTile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpecialTile.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -120,6 +126,7 @@
 				7FA592C7225FEC44004411D9 /* Room.swift */,
 				7F6BA71C2256D20500C5A161 /* Tools.swift */,
 				7FA592C9225FEC94004411D9 /* Position.swift */,
+				7FFC283A226FA237009FF088 /* Random.swift */,
 			);
 			path = mapgen;
 			sourceTree = "<group>";
@@ -137,6 +144,8 @@
 			children = (
 				7F6BA7192256CFB500C5A161 /* mapgen */,
 				7F9F8606226927F10083F399 /* Map.swift */,
+				7FFC2840226FBE4C009FF088 /* Character.swift */,
+				7FFC2842226FCC7C009FF088 /* SpecialTile.swift */,
 			);
 			path = Model;
 			sourceTree = "<group>";
@@ -248,14 +257,17 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				7FFC2841226FBE4C009FF088 /* Character.swift in Sources */,
 				7F6BA71B2256D02500C5A161 /* Graph.swift in Sources */,
 				7F6BA6FB2256CED600C5A161 /* ViewController.swift in Sources */,
 				7FA592CA225FEC94004411D9 /* Position.swift in Sources */,
 				7F6BA6F92256CED600C5A161 /* AppDelegate.swift in Sources */,
+				7FFC2843226FCC7C009FF088 /* SpecialTile.swift in Sources */,
 				7F9F8605226922DB0083F399 /* ARController.swift in Sources */,
 				7FFC2835226C4348009FF088 /* MapEditor.swift in Sources */,
 				7FFC2839226C550E009FF088 /* Controls.swift in Sources */,
 				7FA592CC225FF1BA004411D9 /* Hallway.swift in Sources */,
+				7FFC283B226FA237009FF088 /* Random.swift in Sources */,
 				7F6BA71D2256D20500C5A161 /* Tools.swift in Sources */,
 				7F9F8607226927F10083F399 /* Map.swift in Sources */,
 				7FA592C8225FEC44004411D9 /* Room.swift in Sources */,

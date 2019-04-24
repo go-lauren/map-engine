@@ -24,21 +24,21 @@ class Tools {
         return inInterval(p.x, i[0], i[1]) && inInterval(p.y, i[2], i[3])
     }
     
-    static func roomSize(_ factor: Double, _ w: Int, _ h: Int, _ roomNums: Int) -> [Int] {
+    static func roomSize(_ r: Random, _ factor: Double, _ w: Int, _ h: Int, _ roomNums: Int) -> [Int] {
         var size: [Int] = Array(repeating: 0, count: 2)
-        let avgRoomHeight: Double = Double(w) / sqrt(Double(roomNums))
-        let avgRoomWidth = Double(h) / sqrt(Double(roomNums))
-        let avgRoomDim: Double = min(avgRoomHeight, avgRoomWidth)
-        var randomwidth  = Int.random(in: 2...10)
-        var randomheight = Int.random(in: 2...10)
+        let avgRoomHeight: Float = Float(w) / sqrt(Float(roomNums))
+        let avgRoomWidth = Float(h) / sqrt(Float(roomNums))
+        let avgRoomDim: Float = min(avgRoomHeight, avgRoomWidth)
+        var randomwidth  = Int(ceil(r.nextGaussian(avgRoomDim, avgRoomWidth) * Float(factor)))
+        var randomheight = Int(ceil(r.nextGaussian(avgRoomDim, avgRoomHeight) * Float(factor)))
 //        var randomwidth: Int = Int(ceil(GKGaussianDistribution(randomSource: GKRandomSource(), mean: Float(avgRoomDim), deviation: Float(avgRoomWidth)).nextUniform() * Float(factor)))
 //
 //        var randomheight: Int = Int(ceil(GKGaussianDistribution(randomSource: GKRandomSource(), mean: Float(avgRoomDim), deviation: Float(avgRoomHeight)).nextUniform() * Float(factor)))
         while (randomwidth < 2) {
-            randomwidth = Int(ceil(GKGaussianDistribution(randomSource: GKRandomSource(), mean: Float(avgRoomDim), deviation: Float(avgRoomWidth)).nextUniform() * Float(factor)))
+            randomwidth = Int(ceil(r.nextGaussian(avgRoomDim, avgRoomWidth) * Float(factor)))
         }
         while (randomheight < 2) {
-            randomheight  = Int(ceil(GKGaussianDistribution(randomSource: GKRandomSource(), mean: Float(avgRoomDim), deviation: Float(avgRoomHeight)).nextUniform() * Float(factor))) as Int
+            randomheight  = Int(ceil(r.nextGaussian(avgRoomDim, avgRoomHeight) * Float(factor)))
         }
         size[0] = randomwidth
         size[1] = randomheight
@@ -47,10 +47,10 @@ class Tools {
     
     // return number of rooms
     // TODO: base number of rooms on height / width of map
-    static func roomNums(width w: Int, height h: Int) -> Int{
-        let numRooms: Int = Int.random(in: 30..<50)
+    static func roomNums(_ r: Random, width w: Int, height h: Int) -> Int{
+        let numRooms: Int = r.nextUniform(10, 20)
         if (numRooms < 2) {
-            return roomNums(width: w, height: h);
+            return roomNums(r, width: w, height: h);
         }
         return numRooms
     }

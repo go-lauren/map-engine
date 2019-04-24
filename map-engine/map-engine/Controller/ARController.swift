@@ -10,34 +10,30 @@ import UIKit
 import SceneKit
 import ARKit
 
-class ARController: UIViewController, ARSCNViewDelegate {
+class ARController: UIViewController, ARSCNViewDelegate, ControlsDelegate {
     
     var sceneView: ARSCNView!
     var controls: Controls!
-    var map: Graph = Graph(width: 100, height: 50)
-    
+    var map: Map!
+    var selectedPlane: Bool = false
+    var currentMap: SCNNode!
+    var character: SCNNode!
+    var dimension: Float!
+    var x, y: Int!
+    var tiles: [[Graph.Tile]]!
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        map.fill()
+        map = Map(123456, 100, 50)
         
         self.view.backgroundColor = .white
-        
         self.sceneView = ARSCNView()
-        
         self.view.addSubview(sceneView)
-        
         sceneView.frame = self.view.bounds
-        
-//        sceneView.pinEdges(to: self.view)
-//        sceneView.bottomAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.bottomAnchor).isActive = true
-        
-        
-        // Set the view's delegate
+
         sceneView.delegate = self
-        
-        // Show statistics such as fps and timing information
+    
         sceneView.showsStatistics = true
         
         // Debugging Features
@@ -45,8 +41,13 @@ class ARController: UIViewController, ARSCNViewDelegate {
                                   ARSCNDebugOptions.showFeaturePoints]
         sceneView.autoenablesDefaultLighting = true
         
-        self.controls = Controls(CGRect(x: 0, y: 0, width: 300, height: 100))
+        // Adding controls
+        // TODO: find a good position
+        self.controls = Controls(CGRect(x: 10 , y: self.view.frame.height - self.view.frame.width / 3.0 - 10, width: self.view.frame.width / 3.0, height: self.view.frame.width / 3.0))
+        controls.delegate = self
+        
         self.view.addSubview(controls)
+        
         addTapGestureToSceneView()
     }
     
@@ -56,15 +57,10 @@ class ARController: UIViewController, ARSCNViewDelegate {
         let configuration = ARWorldTrackingConfiguration()
         configuration.planeDetection = .horizontal
         sceneView.session.run(configuration)
-        
     }
     
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
-        
-        
-        
-        
         // Pause the view's session
         sceneView.session.pause()
     }
@@ -82,44 +78,47 @@ class ARController: UIViewController, ARSCNViewDelegate {
     
     
     func renderer(_ renderer: SCNSceneRenderer, didAdd node: SCNNode, for anchor: ARAnchor) {
+        if (!selectedPlane) {
 
-        guard let planeAnchor = anchor as? ARPlaneAnchor else { return }
+            guard let planeAnchor = anchor as? ARPlaneAnchor else { return }
         
-        let width = CGFloat(planeAnchor.extent.x)
-        let height = CGFloat(planeAnchor.extent.z)
-        let plane = SCNPlane(width: width, height: height)
+            let width = CGFloat(planeAnchor.extent.x)
+            let height = CGFloat(planeAnchor.extent.z)
+            let plane = SCNPlane(width: width, height: height)
         
-        plane.materials.first?.diffuse.contents = UIColor.red
+            plane.materials.first?.diffuse.contents = UIColor.red
         
-        let planeNode = SCNNode(geometry: plane)
+            let planeNode = SCNNode(geometry: plane)
         
-        let x = CGFloat(planeAnchor.center.x)
-        let y = CGFloat(planeAnchor.center.y)
-        let z = CGFloat(planeAnchor.center.z)
-        planeNode.position = SCNVector3(x,y,z)
-        planeNode.eulerAngles.x = -.pi / 2
+            let x = CGFloat(planeAnchor.center.x)
+            let y = CGFloat(planeAnchor.center.y)
+            let z = CGFloat(planeAnchor.center.z)
+            planeNode.position = SCNVector3(x,y,z)
+            planeNode.eulerAngles.x = -.pi / 2
         
-        node.addChildNode(planeNode)
+            node.addChildNode(planeNode)
+        }
     }
     
     func renderer(_ renderer: SCNSceneRenderer, didUpdate node: SCNNode, for anchor: ARAnchor) {
-
-        guard let planeAnchor = anchor as?  ARPlaneAnchor,
-            let planeNode = node.childNodes.first,
-            let plane = planeNode.geometry as? SCNPlane
-            else { return }
-
-
-        let width = CGFloat(planeAnchor.extent.x)
-        let height = CGFloat(planeAnchor.extent.z)
-        plane.width = width
-        plane.height = height
+        if (!selectedPlane) {
+            guard let planeAnchor = anchor as?  ARPlaneAnchor,
+                let planeNode = node.childNodes.first,
+                let plane = planeNode.geometry as? SCNPlane
+                else { return }
 
 
-        let x = CGFloat(planeAnchor.center.x)
-        let y = CGFloat(planeAnchor.center.y)
-        let z = CGFloat(planeAnchor.center.z)
-        planeNode.position = SCNVector3(x, y, z)
+            let width = CGFloat(planeAnchor.extent.x)
+            let height = CGFloat(planeAnchor.extent.z)
+            plane.width = width
+            plane.height = height
+
+
+            let x = CGFloat(planeAnchor.center.x)
+            let y = CGFloat(planeAnchor.center.y)
+            let z = CGFloat(planeAnchor.center.z)
+            planeNode.position = SCNVector3(x, y, z)
+        }
     }
     
     
@@ -128,11 +127,64 @@ class ARController: UIViewController, ARSCNViewDelegate {
         sceneView.addGestureRecognizer(tapGestureRecognizer)
     }
     
-
-    
-    @objc func controlPressed() {
-        
+    func rotate(_ vector: simd_float3, _ angle: Float) -> simd_float3 {
+        let rotMatrix = simd_float3x3(
+            simd_float3( cos(angle), sin(angle), 0),
+            simd_float3(-sin(angle), cos(angle), 0),
+            simd_float3( 0,          0,          1))
+        return rotMatrix * vector
     }
+    
+    func moved(_ direction: Controls.Movement) {
+        if (!selectedPlane) { return }
+        if let cameraNode: SCNNode = sceneView.pointOfView {
+            var movementDirection: simd_float4
+            switch(direction) {
+                case Controls.Movement.Up:
+                    movementDirection = simd_float4(0, 1, 0, 1)
+                case Controls.Movement.Down:
+                    movementDirection = simd_float4(0, -1, 0, 1)
+                case Controls.Movement.Right:
+                    movementDirection = simd_float4(1, 0, 0, 1)
+                case Controls.Movement.Left:
+                    movementDirection = simd_float4(-1, 0, 0, 1)
+            }
+            // get direction camera is facing in global coordinates
+            var worldDirection: simd_float4 = simd_float4x4(cameraNode.transform) * movementDirection
+            // we assume our planes are horizontal
+//            worldDirection.z = 0
+            //get direction in respect to plane
+            var localDirection: simd_float3 = simd_float3(sceneView.scene.rootNode.convertVector(SCNVector3(worldDirection.x, worldDirection.y, worldDirection.z), to: currentMap))
+            //normalize local vector
+            localDirection.z = 0
+            localDirection = simd_normalize(localDirection)
+            var forwardDirection: Int = -1
+            // up = 0, left = 1, right = 2,
+            for i in 0..<4 {
+                if (dot(localDirection, rotate(simd_float3(0, 1, 0), Float(i) * Float.pi / 2.0)) > sqrt(2.0) / 2) {
+                    forwardDirection = i
+                    break
+                }
+            }
+            map.moved(forwardDirection)
+        }
+    }
+    
+//    func moved(_ direction: Int) {
+//        switch (direction) {
+//            case 0:
+//                moved(0, 1)
+//            case 1:
+//                moved(-1, 0)
+//            case 2:
+//                moved(0, -1)
+//            case 3:
+//                moved(1, 0)
+//            default:
+//                break
+//            
+//        }
+//    }
     
     @objc func renderMap(withGestureRecognizer recognizer: UIGestureRecognizer) {
         let tapLocation = recognizer.location(in: sceneView)
@@ -140,36 +192,33 @@ class ARController: UIViewController, ARSCNViewDelegate {
         
         let tappedNode: SCNNode = result.node
             if let geometry = tappedNode.geometry as? SCNPlane {
+                let (min_coord, max_coord) = tappedNode.boundingBox
                 
-                let dimension: CGFloat = min(geometry.width / CGFloat(map.w) , geometry.height / CGFloat(map.h))
+                //2. Get It's Z Coordinate
+                let zPosition = tappedNode.position.z
                 
-                let outside = SCNPlane(width: dimension, height: dimension)
-                let inside =  SCNPlane(width: dimension, height: dimension)
-                let wall = SCNPlane(width: dimension, height: dimension)
-                outside.materials.first?.diffuse.contents = UIColor.red
-                inside.materials.first?.diffuse.contents = UIColor.blue
-                wall.materials.first?.diffuse.contents = UIColor.white
+                //3. Get The Width & Height Of The Node
+                let widthOfNode: CGFloat = CGFloat(max_coord.x - min_coord.x)
+                let heightOfNode: CGFloat = CGFloat(max_coord.y - min_coord.y)
                 
-                var tiles = map.generate()
-                for i in 0..<tiles.count {
-                    for j in 0..<tiles[0].count {
-                        let floor = SCNNode()
-                        floor.position = SCNVector3(CGFloat(i) * dimension - 0.5 * geometry.width, CGFloat(j) * dimension - 0.5 * geometry.height,  0.1)
-                        switch (tiles[i][j]) {
-                            case Graph.Tile.Floor:
-                                floor.geometry = inside
-                            case Graph.Tile.Outside:
-                                floor.geometry = outside
-                            case Graph.Tile.Wall:
-                                floor.geometry = wall
-                        }
-                        tappedNode.addChildNode(floor)
-                       
-                    }
-                }
-                geometry.materials.first?.diffuse.contents = UIColor.black
-            }
+                //4. Get The Corners Of The Node
+                let topLeftCorner = SCNVector3(min_coord.x, max_coord.y, zPosition)
+                let bottomLeftCorner = SCNVector3(min_coord.x, min_coord.y, zPosition)
+//                let topRightCorner = SCNVector3(max_coord.x, max_coord.y, zPosition)
+//                let bottomRightCorner = SCNVector3(max_coord.x, min_coord.y, zPosition)
+                print(topLeftCorner)
+                let dimension: CGFloat = min(widthOfNode / CGFloat(map.g.w) , heightOfNode / CGFloat(map.g.h))
+                self.dimension = Float(dimension)
+                
+                tappedNode.addChildNode(map)
+                map.scale = SCNVector3(self.dimension, self.dimension, self.dimension)
+                map.position = SCNVector3(0, 0, 0)
+                
+                geometry.materials.first?.diffuse.contents = UIColor.clear
 
+                currentMap = tappedNode
+                selectedPlane = true
+            }
     }
     
     
@@ -201,8 +250,3 @@ class ARController: UIViewController, ARSCNViewDelegate {
 
 }
 
-extension ARSCNView {
-    func sceneHitTest(_ point: CGPoint, options: [SCNHitTestOption : Any]? = nil) -> [SCNHitTestResult] {
-        return super.hitTest(point, options: options)
-    }
-}
